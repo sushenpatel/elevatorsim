@@ -12,6 +12,8 @@ Problem Statement:
 Solution:
 
 Run with Python 3.6 and up
+>>python elevator.py [-s --start] [-f --floor] [-o --optimal]
+
 
 # ASSUMPTIONS: 
 # Floors must be specified between 1 and 100
