@@ -9,6 +9,7 @@ class Elevator():
         # Private var representing travel time between single floors for this elevator. 
         # Could also be set as a static class variable or global
         self._floor_travel_t = travel_time
+        self._current_floor = 1
 
     @staticmethod
     def map_shortest_route(start: int, floors: List[int]) -> List[int]:
@@ -31,21 +32,26 @@ class Elevator():
         # TODO Feature: Could enhance this by choosing a direction and stopping at closer floors first to let people off
         return floors
 
-    def simulate_route(self, start: int, floors: List[int], optimal=False) -> Tuple[int, List[int]]:
+    def move(self, dest: int) -> int:
+        """Moves the elevator to the specified floor and returns the time elapsed"""
+        time = abs(self._current_floor - dest) * self._floor_travel_t
+        self._current_floor = dest
+        return time
+
+    def simulate_route(self, start: int, floors: List[int], optimize=False) -> Tuple[int, List[int]]:
         """Simulates moving to the specified floors and outputs the total travel time and order of floors visited"""
-        floor_order = floors
-        current_floor = start
-        floors_traveled = 0
+        visit_floors = floors
+        self._current_floor = start
+        total_time = 0
 
-        if optimal:
-            floor_order = self.map_shortest_route(start, floors)
+        if optimize:
+            visit_floors = self.map_shortest_route(start, floors)
 
-        for dest in floor_order:
-            # print(f"Start: {start_floor}, dest: {dest}, travel time: {abs(current_floor - dest)}")
-            floors_traveled += abs(current_floor - dest)
-            current_floor = dest
+        for dest in visit_floors:
+            # print(f"Start: {self._current_floor}, dest: {dest}")
+            total_time += self.move(dest)
 
-        return floors_traveled * self._floor_travel_t, floor_order
+        return total_time, visit_floors
 
 def main(argv):
     floors = []
@@ -54,18 +60,18 @@ def main(argv):
 
     # Input argument parsing and user help documentation
     try:
-        opts, args = getopt.getopt(argv, "hs:f:o", ["help", "start=", "floor=", "optimal"])
+        opts, args = getopt.getopt(argv, "hs:f:o", ["help", "start=", "floor=", "optimize"])
     except getopt.GetoptError:
         print(f'Script argument error:\nelevator.py\n\t'
               f'[-s --start]=<start floor (1-100)> default:1\n\t[-f --floor]='
               f'<list of floors to stop at (1-100)> (comma-separated no spaces)'
-              f'\n\t[-o --optimal] Allow floors to be visited out of order to reduce transit time')
+              f'\n\t[-o --optimize] Allow floors to be visited out of order to reduce transit time')
         sys.exit(2)
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             print(f'elevator.py\n\t[-s --start]=<start floor (1-100)>'
                   f'\n\t[-f --floor]=<list of floors to stop at (1-100)> (comma-separated no spaces)'
-                  f'\n\t[-o --optimal] Allow floors to be visited out of order to reduce transit time')
+                  f'\n\t[-o --optimize] Allow floors to be visited out of order to reduce transit time')
             sys.exit()
         elif opt in ('-s', '--start'):
             arg = arg.replace('=', '')
